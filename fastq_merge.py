@@ -6,8 +6,8 @@
 
 # Example header
 # Before running fastq_merge.py: @A00405:365:H72K3DRXY:1:2101:1452:1063 3:N:0:CGACTTAG
-# After running fastq_merge.py: @A00405:365:H72K3DRXY:1:2101:1452:1063 3:N:0:CGACTTAG_AACGTTAGCTTACAGCCCTGCCCCTGT_CNTTGAAT
-# Format: @A00405:365:H72K3DRXY:1:2101:1452:1063 3:N:0:CGACTTAG_CELLBARCODE_UMI
+# After running fastq_merge.py: @A00405:365:H72K3DRXY:1:2101:1452:1063_AACGTTAGCTTACAGCCCTGCCCCTGT_CNTTGAAT 3:N:0:CGACTTAG
+# Format: @A00405:365:H72K3DRXY:1:2101:1452:1063_CELLBARCODE_UMI 3:N:0:CGACTTAG
 # CELLBARCODE_UMI = (16bp_index_seq)(11bp_index_seq)_(8bp_seq)
 
 import sys
@@ -41,16 +41,21 @@ def main(argv):
         outfile = open(f"{sample}_merged.fastq", "w")
 
         while True:
-            # get mRNA reads
+            # get mRNA reads (R3)
             r3_chunk = getchunk(r3)
             if not r3_chunk:
                 break
-            # add 16bp index sequence (from 10X ATAC-seq oligos) to header (from R2)
-            r3_chunk[0] += f"_{getchunk(r2)[1]}"
+
+            # get info from R1 and R2 to add cell barcode and UMI in header
+            # first, add 16bp index sequence (from 10X ATAC-seq oligos) to header insert (from R2)
+            # next, add 11bp index sequence (from RT primers) and 8bp UMI to header insert (from R1)
             
-            # add 11bp index sequence (from RT primers) and 8bp UMI to header (from R1)
             r1_chunk = getchunk(r1)
-            r3_chunk[0] += f"{r1_chunk[1][9:20]}_{r1_chunk[1][0:8]}"
+            header_insert = f"_{getchunk(r2)[1]}{r1_chunk[1][9:20]}_{r1_chunk[1][0:8]}"
+
+            # insert cell barcode and UMI into R3 header, before " " character (insert_index)
+            insert_index = r3_chunk[0].find(" ")
+            r3_chunk[0] = f"{r3_chunk[0][:insert_index]}{header_insert}{r3_chunk[0][insert_index:]}"
 
             # write mRNA reads and updated headers to outfile
             for line in r3_chunk:
