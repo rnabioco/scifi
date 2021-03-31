@@ -44,7 +44,7 @@ def main(argv):
                 index = sample.split()[0] # index to compare to cell barcode
                 filename = f"{sample.split()[1]}_{sample.split()[2]}" # filename = sample_name + plate_well
                 with open(f"{filename}_counts.tsv", 'w') as outfile:
-                    outfile.write("cell\tgene\tcount\n")
+                    outfile.write("gene\tcell\tcount\n")
                     for line in counts:
                         line = line.decode('utf8')
                         barcode = line.split()[1][-11:] # grab portion of cell barcode that contains sample index
