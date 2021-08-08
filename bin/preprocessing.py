@@ -24,8 +24,6 @@ import os
 import glob
 from itertools import islice
 import gzip
-import shutil
-from pathlib import Path
 
 # Specifying command line arguments
 parser = argparse.ArgumentParser()
