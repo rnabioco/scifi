@@ -22,6 +22,7 @@ import sys
 import argparse
 import os
 import glob
+from pysam import FastxFile
 from itertools import islice
 import gzip
 
@@ -30,32 +31,33 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument("data_dir", help = "path to folder with fastq files from scifi scRNA-seq experiment (I1, R1, R2, R3)")
 parser.add_argument("allowlist", help = "path to allowlist")
+parser.add_argument("tolerance", help = "hamming distance for sequencing error allowance", nargs = "?", default = 1)
 
 args = parser.parse_args()
 
 # Helper functions
-#   -getsamples; get well-specific sample indexes from provided allowlist
-#   -getchunk; go through fastq files 4 lines at a time
-#   -writechunk; store chunks and corresponding filenames in dictionary for efficient file writing
+#   -get_samples; get well-specific sample indexes from provided allowlist
+#   -write_entry; store entries and corresponding filenames in dictionary for efficient file writing
+#   -hamming_distance; calculates the number of bases in which two sequences of equal length are different
 
-def getsamples(file):
+def get_samples(file):
     with open(file) as f:
         samples = f.readlines()
     samples = [sample.strip() for sample in samples]
     return samples
 
-def getchunk(file): 
-    return [x.strip() for x in islice(file, 4)]
-
-def writechunk(file, chunk, file_dict): 
+def write_entry(file, entry, file_dict): 
     if file not in file_dict.keys():
-        file_dict[file] = gzip.open(file, "wt")
-    file_dict[file].write("\n".join(chunk) + "\n")
+        file_dict[file] = gzip.open(file, "wt", compresslevel = 6)
+    file_dict[file].write(str(entry))
+
+def hamming_distance(seq1, seq2):
+    return sum(base1 != base2 for base1, base2 in zip(seq1, seq2))
 
 # Main function
 def main(argv):
     # get list of well-specific sample indexes from allowlist
-    samples = getsamples(args.allowlist)
+    samples = get_samples(args.allowlist)
 
     # change dir to data_dir
     os.chdir(args.data_dir)
@@ -69,45 +71,45 @@ def main(argv):
 
     try:
         # open I1, R1, R2, and R3 fastq read files
-        i1 = gzip.open(glob.glob("*I1*.fastq.gz")[0], "rt")
-        r1 = gzip.open(glob.glob("*R1*.fastq.gz")[0], "rt")
-        r2 = gzip.open(glob.glob("*R2*.fastq.gz")[0], "rt")
-        r3 = gzip.open(glob.glob("*R3*.fastq.gz")[0], "rt")
+        i1 = FastxFile(glob.glob("*I1*.fastq.gz")[0])
+        r1 = FastxFile(glob.glob("*R1*.fastq.gz")[0])
+        r2 = FastxFile(glob.glob("*R2*.fastq.gz")[0])
+        r3 = FastxFile(glob.glob("*R3*.fastq.gz")[0])
 
         while True:
-            # get reads in 4 line chunks from corresponding infiles
-            r1_chunk = getchunk(r1)
-            if not r1_chunk:
+            # get reads in 4 line entries from corresponding infiles
+            r1_entry = next(r1)
+            if not r1_entry:
                 break
-            r2_chunk = getchunk(r2)
-            r3_chunk = getchunk(r3)
-            i1_chunk = getchunk(i1)
+            r2_entry = next(r2)
+            r3_entry = next(r3)
+            i1_entry = next(i1)
 
             # get well-specific sample index from original R1
-            sample_index = f"{r1_chunk[1][9:20]}"
+            sample_index = r1_entry.sequence[9:20]
 
             # get cell barcdoe from original R2 and UMI from original R1
-            cell_barcode = f"{r2_chunk[1]}"
-            cell_barcode_qc = f"{r2_chunk[3]}"
-            umi = f"{r1_chunk[1][0:8]}"
-            umi_qc = f"{r1_chunk[3][0:8]}"
+            cell_barcode = r2_entry.sequence
+            cell_barcode_qc = r2_entry.quality
+            umi = r1_entry.sequence[0:8]
+            umi_qc = r1_entry.quality[0:8]
 
             # write new R1 sequence info (cell barcode + UMI)
-            r1_chunk[1] = f"{cell_barcode}{umi}"
-            r1_chunk[3] = f"{cell_barcode_qc}{umi_qc}"
+            r1_entry.sequence = cell_barcode + umi
+            r1_entry.quality = cell_barcode_qc + umi_qc
 
-            # if sample_index is in the allowlist of well-specific sample indexes:
-            # TODO: is there a way to allow for sequencing error (off by one)? Levenshtein? Custom helper function?
-            if sample_index in samples:
-                writechunk(f"preprocessed_fastqs/{sample_index}_I1.fastq.gz", i1_chunk, output_dict)
-                writechunk(f"preprocessed_fastqs/{sample_index}_R1.fastq.gz", r1_chunk, output_dict)
-                writechunk(f"preprocessed_fastqs/{sample_index}_R2.fastq.gz", r3_chunk, output_dict)
+            # if sample_index is in the allowlist of well-specific sample indexes (hamming distance <= 1 by default):
+            match = next((sample for sample in samples if hamming_distance(sample, sample_index) <= args.tolerance), None)
+            if match:
+                write_entry(f"preprocessed_fastqs/{match}_I1.fastq.gz", i1_entry, output_dict)
+                write_entry(f"preprocessed_fastqs/{match}_R1.fastq.gz", r1_entry, output_dict)
+                write_entry(f"preprocessed_fastqs/{match}_R2.fastq.gz", r3_entry, output_dict)
 
-            # if sample_index is not in the allowlist of well-specific sample indexes it is an orphaned read:
+            # if sample_index is not in the allowlist of well-specific sample indexes it is an unassigned read:
             else:
-                writechunk(f"preprocessed_fastqs/orphan_I1.fastq.gz", i1_chunk, output_dict)
-                writechunk(f"preprocessed_fastqs/orphan_R1.fastq.gz", r1_chunk, output_dict)
-                writechunk(f"preprocessed_fastqs/orphan_R2.fastq.gz", r3_chunk, output_dict)
+                write_entry(f"preprocessed_fastqs/unassigned_I1.fastq.gz", i1_entry, output_dict)
+                write_entry(f"preprocessed_fastqs/unassigned_R1.fastq.gz", r1_entry, output_dict)
+                write_entry(f"preprocessed_fastqs/unassigned_R2.fastq.gz", r3_entry, output_dict)
             
     except IOError:
         print("Could not open file.")
