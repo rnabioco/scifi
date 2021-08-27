@@ -14,9 +14,6 @@
 #   - R2: 16 base round 2 barcode
 #   - R3: 70 base mRNA sequence
 #   - I1: 8 base i7 sample index
-#
-# TODO: do we need to include the sample index in individual file headers?
-# TODO: would is be more useful to label files with the well ID vs sample index (i.e., A4 vs TGTAAGAATCA)?
 
 import sys
 import argparse
@@ -30,26 +27,31 @@ import gzip
 parser = argparse.ArgumentParser()
 
 parser.add_argument("data_dir", help = "path to folder with fastq files from scifi scRNA-seq experiment (I1, R1, R2, R3)")
-parser.add_argument("allowlist", help = "path to allowlist")
+parser.add_argument("allowlist", help = "path to allowlist (a tab-separated file that contains the well id, sample name, and sample index of each sample")
 parser.add_argument("tolerance", help = "hamming distance for sequencing error allowance", nargs = "?", default = 1)
 
 args = parser.parse_args()
 
 # Helper functions
-#   -get_samples; get well-specific sample indexes from provided allowlist
+#   -get_samples; get well-specific ids, sample names, and sample indexes from provided allowlist and store in dictionary
 #   -write_entry; store entries and corresponding filenames in dictionary for efficient file writing
 #   -hamming_distance; calculates the number of bases in which two sequences of equal length are different
 
 def get_samples(file):
+    sample_dict = {}
     with open(file) as f:
-        samples = f.readlines()
-    samples = [sample.strip() for sample in samples]
-    return samples
+        for line in f:
+            splitline = line.split()
+            well_id = splitline[0]
+            sample_name = splitline[1]
+            sample_seq = splitline[2]
+            sample_dict[sample_seq] = (well_id, sample_name)
+    return sample_dict
 
 def write_entry(file, entry, file_dict): 
     if file not in file_dict.keys():
         file_dict[file] = gzip.open(file, "wt", compresslevel = 6)
-    file_dict[file].write(str(entry))
+    file_dict[file].write(str(entry) + "\n")
 
 def hamming_distance(seq1, seq2):
     return sum(base1 != base2 for base1, base2 in zip(seq1, seq2))
@@ -57,14 +59,15 @@ def hamming_distance(seq1, seq2):
 # Main function
 def main(argv):
     # get list of well-specific sample indexes from allowlist
-    samples = get_samples(args.allowlist)
+    sample_dict = get_samples(args.allowlist)
+    samples = list(sample_dict.keys())
 
     # change dir to data_dir
     os.chdir(args.data_dir)
 
     # make outfile directory, "preprocessed_fastqs"
     outdir = "preprocessed_fastqs"
-    os.makedirs(f"./{outdir}", exist_ok = True)
+    os.makedirs(f"../{outdir}", exist_ok = True)
 
     # initialize output dictionary
     output_dict = {}
@@ -101,15 +104,15 @@ def main(argv):
             # if sample_index is in the allowlist of well-specific sample indexes (hamming distance <= 1 by default):
             match = next((sample for sample in samples if hamming_distance(sample, sample_index) <= args.tolerance), None)
             if match:
-                write_entry(f"preprocessed_fastqs/{match}_I1.fastq.gz", i1_entry, output_dict)
-                write_entry(f"preprocessed_fastqs/{match}_R1.fastq.gz", r1_entry, output_dict)
-                write_entry(f"preprocessed_fastqs/{match}_R2.fastq.gz", r3_entry, output_dict)
+                write_entry(f"../preprocessed_fastqs/{sample_dict[match][0]}_{sample_dict[match][1]}_I1.fastq.gz", i1_entry, output_dict)
+                write_entry(f"../preprocessed_fastqs/{sample_dict[match][0]}_{sample_dict[match][1]}_R1.fastq.gz", r1_entry, output_dict)
+                write_entry(f"../preprocessed_fastqs/{sample_dict[match][0]}_{sample_dict[match][1]}_R2.fastq.gz", r3_entry, output_dict)
 
             # if sample_index is not in the allowlist of well-specific sample indexes it is an unassigned read:
             else:
-                write_entry(f"preprocessed_fastqs/unassigned_I1.fastq.gz", i1_entry, output_dict)
-                write_entry(f"preprocessed_fastqs/unassigned_R1.fastq.gz", r1_entry, output_dict)
-                write_entry(f"preprocessed_fastqs/unassigned_R2.fastq.gz", r3_entry, output_dict)
+                write_entry(f"../preprocessed_fastqs/unassigned_I1.fastq.gz", i1_entry, output_dict)
+                write_entry(f"../preprocessed_fastqs/unassigned_R1.fastq.gz", r1_entry, output_dict)
+                write_entry(f"../preprocessed_fastqs/unassigned_R2.fastq.gz", r3_entry, output_dict)
             
     except IOError:
         print("Could not open file.")

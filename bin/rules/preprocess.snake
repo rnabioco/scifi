@@ -1,0 +1,14 @@
+""" rules for scifi-RNA-seq fastq file preprocessing """
+
+rule preprocess:
+    input:
+        data = DATA + "/raw_data/"
+        allowlist = DATA + "/allowlist.tsv"
+    output:
+        preprocessed_fastqs = DATA + "/preprocessed_fastqs"
+    params:
+        job_name = "preprocess"
+        memory = "select[mem > 45] rusage[mem = 45]", # LSF format; change as needed
+    log:
+    script:
+        "scripts/preprocessing.py"

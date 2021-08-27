@@ -1,0 +1,16 @@
+shell.executable("/usr/bin/env bash")
+
+""" Snakemake pipeline for scifi-RNA-seq counting"""
+
+configfile: "config.yaml"
+  
+DATA = config["DATA"]
+GENOME_DIR = config["GENOME_DIR"]
+
+rule all:
+  input:
+
+include: "rules/preprocess.snake"
+include: "rules/splici_ref.snake"
+include: "rules/map.snake"
+include: "rules/process.snake"

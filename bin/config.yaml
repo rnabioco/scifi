@@ -1,0 +1,16 @@
+# config for scifi-RNA-seq snakemake pipeline #
+ 
+DATA: 
+# Data folder (FASTQs and allowlist in raw_data subfolder)
+# See "sample_data" folder for FASTQ and allowlist naming
+  "sample_data"
+
+OUT_DATA:
+
+GENOME_DIR:
+# Reference folder containing fasta/genome.fa and genes/genes.gtf files
+  "sample_ref" 
+
+SAMPLES:
+# Sample basenames
+  - sample
