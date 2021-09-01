@@ -12,7 +12,7 @@ SAMPLES = config["SAMPLES"]
 SRC = config["SRC"]
 
 samples = []
-with open(file) as f:
+with open(SAMPLES) as f:
     for line in f:
         splitline = line.split()
         well_id = splitline[0]
