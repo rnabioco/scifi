@@ -9,7 +9,7 @@ This pipeline requires the following exectuables in your PATH:
 * [salmon](https://github.com/COMBINE-lab/salmon) (developed with version 1.5.2)
 * [alevin-fry](https://github.com/COMBINE-lab/alevin-fry) (developed with version 0.4.1)
 
-## Example Usage
+## Usage
 To run this pipeline, edit `config.yaml` to specify the following parameters:
 
 1. `RAW_DATA`: This is the directory that contains the raw fastq data and experiment allowlist (a 3-column, tab-separated file that contains the well id, sample name, and sample index of each sample).
@@ -26,7 +26,7 @@ If successful you should generate the following files per sample (located under 
 * quants_mat_cols.txt (the gene names for each column of the matrix)
 * quants_mat_rows.txt (the cell barcodes for each row of the matrix)
 
-The counts matrix contains UMIs separately attributed to _spliced_ or __unspliced_ (intronic) gene sequences, or as _ambiguous_. For more information, see the [alevin-fry tutorial](https://combine-lab.github.io/alevin-fry-tutorials/2021/improving-txome-specificity/).
+The counts matrix contains UMIs separately attributed to _spliced_ or _unspliced_ (intronic) gene sequences, or as _ambiguous_. For more information, see the [alevin-fry tutorial](https://combine-lab.github.io/alevin-fry-tutorials/2021/improving-txome-specificity/).
 
 ## Downstream Processing
 After running this pipeline subsequent processing can be done in R or Python using the `load_fry.py` or `load_fry.R` scripts available in `/bin/downstream_processing`.
