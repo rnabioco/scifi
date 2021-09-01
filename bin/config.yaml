@@ -1,16 +1,25 @@
 # config for scifi-RNA-seq snakemake pipeline #
  
-DATA: 
-# Data folder (FASTQs and allowlist in raw_data subfolder)
-# See "sample_data" folder for FASTQ and allowlist naming
-  "sample_data"
+RAW_DATA: 
+  # path to input raw fastqs and allowlist
+  "/beevol/home/winklerc/projects/scifi_pipeline/raw_data"
 
 OUT_DATA:
+  # path to output data files
+  "../data"
 
-GENOME_DIR:
-# Reference folder containing fasta/genome.fa and genes/genes.gtf files
-  "sample_ref" 
+FASTA:
+  # path to fasta .fa reference file
+  "/beevol/home/winklerc/projects/scifi_pipeline/test_ref/refdata-gex-GRCh38-2020-A/fasta/genome.fa" 
+
+GTF:
+  # path to gtf .gtf gene annotation file
+  "/beevol/home/winklerc/projects/scifi_pipeline/test_ref/refdata-gex-GRCh38-2020-A/genes/genes.gtf" 
 
 SAMPLES:
-# Sample basenames
-  - sample
+  # path to allowlist
+  "/beevol/home/winklerc/projects/scifi_pipeline/raw_data/allowlist"
+
+SRC:
+  # path to directory with source code
+  "/beevol/home/winklerc/projects/scifi_pipeline/src"

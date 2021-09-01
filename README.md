@@ -10,11 +10,29 @@ This pipeline requires the following exectuables in your PATH:
 * [alevin-fry](https://github.com/COMBINE-lab/alevin-fry) (developed with version 0.4.1)
 
 ## Example Usage
-This pipeline requires the following as input (defined in config.yaml):
-* scifi-RNA-seq FASTQs
-* allowlist (tab-separated file) containing corresponding well ids, sample names, and sample index sequences
-* 10X Genomics reference directory
+To run this pipeline, edit `config.yaml` to specify the following parameters:
 
+1. `RAW_DATA`: This is the directory that contains the raw fastq data and experiment allowlist (a 3-column, tab-separated file that contains the well id, sample name, and sample index of each sample).
+2. `OUT_DATA`: This is the directory that the output results will be placed.
+3. `FASTA`: This is the path to a fasta reference file, appropriate to the experiment.
+4. `GTF`: This is the path to a gene annotation file, appropriate to the experiment.
+5. `SAMPLES`: This is the path to the allowlist contained in the `RAW_DATA` directory. Sample names consist of the well id followed by the sample name, i.e. `{well_id}_{sample_name}`.
+6. `SRC`: This is the `src` directory that contains the `preprocessing.py` and `make_splici_txome.R` scripts.
+
+## Output Files
+If successful you should generate the following files per sample (located under `{OUT_DIR}/scifi/{sample}/quant_res/alevin`):
+
+* quants_mat.mtx (the count matrix; [num_cells] x 3[num_genes])
+* quants_mat_cols.txt (the gene names for each column of the matrix)
+* quants_mat_rows.txt (the cell barcodes for each row of the matrix)
+
+The counts matrix contains UMIs separately attributed to _spliced_ or __unspliced_ (intronic) gene sequences, or as _ambiguous_. For more information, see the [alevin-fry tutorial](https://combine-lab.github.io/alevin-fry-tutorials/2021/improving-txome-specificity/).
+
+## Downstream Processing
+After running this pipeline subsequent processing can be done in R or Python using the `load_fry.py` or `load_fry.R` scripts available in `/bin/downstream_processing`.
+<br />
+<br />
+<br />
 See the [Snakemake](https://snakemake.readthedocs.io/en/stable/) documentation for general information in executing and manipulating snakemake pipelines.
 
 https://github.com/rnabioco/scifi

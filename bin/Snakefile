@@ -4,13 +4,31 @@ shell.executable("/usr/bin/env bash")
 
 configfile: "config.yaml"
   
-DATA = config["DATA"]
-GENOME_DIR = config["GENOME_DIR"]
+RAW_DATA = config["RAW_DATA"]
+OUT_DATA = config["OUT_DATA"]
+FASTA = config["FASTA"]
+GTF = config["GTF"]
+SAMPLES = config["SAMPLES"]
+SRC = config["SRC"]
+
+samples = []
+with open(file) as f:
+    for line in f:
+        splitline = line.split()
+        well_id = splitline[0]
+        sample_name = splitline[1]
+        samples.append(f"{well_id}_{sample_name}")
+samples.append("unassigned")
+return samples
 
 rule all:
   input:
+    expand("{out_data}/scifi/{sample}/quant_res/alevin/quants_mat_cols.txt",
+           "{out_data}/scifi/{sample}/quant_res/alevin/quants_mat.mtx",
+           "{out_data}/scifi/{sample}/quant_res/alevin/quants_mat_rows.txt",
+           "{out_data}/scifi/{sample}/quant_res/featureDump.txt",
+           "{out_data}/scifi/{sample}/quant_res/quant.json",
+           out_data = OUT_DATA, 
+           sample = samples)
 
-include: "rules/preprocess.snake"
-include: "rules/splici_ref.snake"
-include: "rules/map.snake"
-include: "rules/process.snake"
+include: "rules/scifi.snake"

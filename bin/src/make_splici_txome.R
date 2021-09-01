@@ -199,17 +199,3 @@ make_splici_txome <- function(gtf_path,
 
   message("Done.")
 }
-
-suppressPackageStartupMessages({
-  library(eisaR)
-  library(Biostrings)
-  library(BSgenome)
-  library(stringr)
-  library(GenomicFeatures)
-})
-
-make_splici_txome(gtf_path = snakemake@input[["gtf"]], 
-                  genome_path = snakemake@input[["genome"]], 
-                  read_length = snakemake@params[["read_length"]], 
-                  flank_trim_length = snakemake@input[["flank_trim_length"]], 
-                  output_dir = snakemake@output[["splici_ref"]])

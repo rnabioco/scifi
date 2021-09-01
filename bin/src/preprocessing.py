@@ -2,7 +2,7 @@
 #
 # Take the I1, R1, R2, and R3 fastq files from a scifi experiment and do the following:
 #   - split files by well-specific sample index
-#   - format for Alevin (10X v3 data)
+#   - format for alevin-fry
 #
 # New R1 files will contain the cell barcodes and UMIs:
 #   - cell barcode: 16 base index sequence from the 10X ATAC-seq oligos (from original R2)
