@@ -3,7 +3,7 @@ This is a pipeline to process scifi-scRNA-seq ([Datlinger et al.](https://doi.or
 
 ## Dependencies
 This pipeline requires the following exectuables in your PATH:
-* [Snakemake](https://github.com/snakemake/snakemake) (developed with version 6.7.0)
+* [Snakemake](https://github.com/snakemake/snakemake) (developed with version 3.11.2)
 * [Python 3](https://www.python.org/) (developed with version 3.6.3)
 * [R](https://www.r-project.org/) (developed with version 4.0.3)
 * [salmon](https://github.com/COMBINE-lab/salmon) (developed with version 1.5.2)
