@@ -29,7 +29,7 @@ If successful you should generate the following files per sample (located under 
 The counts matrix contains UMIs separately attributed to _spliced_ or _unspliced_ (intronic) gene sequences, or as _ambiguous_. For more information, see the [alevin-fry tutorial](https://combine-lab.github.io/alevin-fry-tutorials/2021/improving-txome-specificity/).
 
 ## Downstream Processing
-After running this pipeline subsequent processing can be done in R or Python using the `load_fry.py` or `load_fry.R` scripts available in `/bin/downstream_processing`.
+After running this pipeline subsequent processing can be done in R or Python using the `load_fry.py` or `load_fry.R` scripts available in `/bin/downstream_processing`. As stated in the [alevin-fry tutorial](https://combine-lab.github.io/alevin-fry-tutorials/2021/improving-txome-specificity/), _the entire `quant_res` output directory is important for running the provided downstream processing scripts, so please keep its structure intact_. Please also note that we do not filter cells in this pipeline, and therefore it is important to filter the resulting output quantification matrix using a method like `Empty Drops` in R or scanpy's `filter_cells` (Python).
 <br />
 <br />
 <br />
