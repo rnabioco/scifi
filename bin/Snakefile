@@ -22,11 +22,11 @@ with open(SAMPLES) as f:
 
 rule all:
   input:
-    expand("{out_data}/scifi/{sample}/quant_res/alevin/quants_mat_cols.txt",
-           "{out_data}/scifi/{sample}/quant_res/alevin/quants_mat.mtx",
-           "{out_data}/scifi/{sample}/quant_res/alevin/quants_mat_rows.txt",
-           "{out_data}/scifi/{sample}/quant_res/featureDump.txt",
-           "{out_data}/scifi/{sample}/quant_res/quant.json",
+    expand(["{out_data}/{sample}/quant_res/alevin/quants_mat_cols.txt",
+           "{out_data}/{sample}/quant_res/alevin/quants_mat.mtx",
+           "{out_data}/{sample}/quant_res/alevin/quants_mat_rows.txt",
+           "{out_data}/{sample}/quant_res/featureDump.txt",
+           "{out_data}/{sample}/quant_res/quant.json"],
            out_data = OUT_DATA, 
            sample = samples)
 

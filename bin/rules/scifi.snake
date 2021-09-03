@@ -14,7 +14,7 @@ def _get_fastqs(wildcards):
   data_dir = "{out_data}/preprocessed_fastqs"
   fqs = glob.glob(os.path.join(data_dir, wildcards.sample) + "*.gz")
 
-  if len(fqs) = 0:
+  if len(fqs) == 0:
     sys.exit("fastqs could not be found in directory {}".format(data_dir))
   
   path_to_fqs = [os.path.join(data_dir, x) for x in fqs]
@@ -129,9 +129,9 @@ rule build_idx: # build a splici (spliced + intron) index for alevin-fry
 
 rule map_reads: # map reads and generate a RAD (Reduced Alignment Data) file
     input:
+        _get_fastqs,
         idx = "{out_data}/ref/idx",
-        tgmap = "{out_data}/ref/transcriptome/transcriptome_splici_fl86_t2g.tsv",
-        _get_fastqs
+        tgmap = "{out_data}/ref/transcriptome/transcriptome_splici_fl86_t2g.tsv"
     output:
         "{out_data}/{sample}/map/alevin/alevin.log",
         "{out_data}/{sample}/map/aux_info/meta_info.json",
