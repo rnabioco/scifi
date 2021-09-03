@@ -11,7 +11,7 @@ def get_read_id(fq_path):
   return read_id
 
 def _get_fastqs(wildcards):
-  data_dir = "{out_data}/scifi/preprocessed_fastqs"
+  data_dir = "{out_data}/preprocessed_fastqs"
   fqs = glob.glob(os.path.join(data_dir, wildcards.sample) + "*.gz")
 
   if len(fqs) = 0:
@@ -39,14 +39,14 @@ rule preprocess: # split input fastq files from RAW_DATA by well and format for 
         data = RAW_DATA,
         allowlist = RAW_DATA + "/allowlist.tsv"
     output:
-        "{out_data}/scifi/preprocessed_fastqs/{sample}_I1.fastq.gz",
-        "{out_data}/scifi/preprocessed_fastqs/{sample}_R1.fastq.gz",
-        "{out_data}/scifi/preprocessed_fastqs/{sample}_R2.fastq.gz"
+        "{out_data}/preprocessed_fastqs/{sample}_I1.fastq.gz",
+        "{out_data}/preprocessed_fastqs/{sample}_R1.fastq.gz",
+        "{out_data}/preprocessed_fastqs/{sample}_R2.fastq.gz"
     params:
         job_name = "preprocess",
         memory = "select[mem > 64] rusage[mem = 64]"
     log:
-      "/scifi/preprocessed_fastqs/logs/preprocess"
+      "logs/preprocess.out"
     shell:
         """
         python3 \
@@ -60,17 +60,17 @@ rule make_txome: # make a splici (spliced + intron) transcriptome for alevin-fry
         genome = FASTA,
         gtf = GTF
     output:
-        "{out_data}/scifi/ref/transcriptome/transcriptome_splici_fl86.fa",
-        "{out_data}/scifi/ref/transcriptome/transcriptome_splici_fl86_t2g.tsv",
-        "{out_data}/scifi/ref/transcriptome/transcriptome_splici_fl86_t2g_3col.tsv"
+        "{out_data}/ref/transcriptome/transcriptome_splici_fl86.fa",
+        "{out_data}/ref/transcriptome/transcriptome_splici_fl86_t2g.tsv",
+        "{out_data}/ref/transcriptome/transcriptome_splici_fl86_t2g_3col.tsv"
     params:
         job_name = "make_txome",
         memory = "select[mem > 64] rusage[mem = 64]",
         read_length = 91,
         flank_trim_length = 5,
-        out_dir = "{out_data}/scifi/ref/transcriptome"
+        out_dir = "{out_data}/ref/transcriptome"
     log:
-        "/scifi/ref/logs/make_txome"
+        "logs/make_txome.out"
     shell:
         """
         R
@@ -94,29 +94,29 @@ rule make_txome: # make a splici (spliced + intron) transcriptome for alevin-fry
 
 rule build_idx: # build a splici (spliced + intron) index for alevin-fry
     input:
-        fasta = "{out_data}/scifi/ref/transcriptome/transcriptome_splici_fl86.fa"
+        fasta = "{out_data}/ref/transcriptome/transcriptome_splici_fl86.fa"
     output:
-        "{out_data}/scifi/ref/idx/complete_ref_lens.bin",
-        "{out_data}/scifi/ref/idx/ctable.bin",
-        "{out_data}/scifi/ref/idx/ctg_offsets.bin",
-        "{out_data}/scifi/ref/idx/duplicate_clusters.tsv",
-        "{out_data}/scifi/ref/idx/info.json",
-        "{out_data}/scifi/ref/idx/mphf.bin",
-        "{out_data}/scifi/ref/idx/pos.bin",
-        "{out_data}/scifi/ref/idx/pre_indexing.bin",
-        "{out_data}/scifi/ref/idx/rank.bin",
-        "{out_data}/scifi/ref/idx/refAccumLengths.bin",
-        "{out_data}/scifi/ref/idx/ref_indexing.bin",
-        "{out_data}/scifi/ref/idx/reflengths.bin",
-        "{out_data}/scifi/ref/idx/refseq.bin",
-        "{out_data}/scifi/ref/idx/seq.bin",
-        "{out_data}/scifi/ref/idx/versionInfo.json"
+        "{out_data}/ref/idx/complete_ref_lens.bin",
+        "{out_data}/ref/idx/ctable.bin",
+        "{out_data}/ref/idx/ctg_offsets.bin",
+        "{out_data}/ref/idx/duplicate_clusters.tsv",
+        "{out_data}/ref/idx/info.json",
+        "{out_data}/ref/idx/mphf.bin",
+        "{out_data}/ref/idx/pos.bin",
+        "{out_data}/ref/idx/pre_indexing.bin",
+        "{out_data}/ref/idx/rank.bin",
+        "{out_data}/ref/idx/refAccumLengths.bin",
+        "{out_data}/ref/idx/ref_indexing.bin",
+        "{out_data}/ref/idx/reflengths.bin",
+        "{out_data}/ref/idx/refseq.bin",
+        "{out_data}/ref/idx/seq.bin",
+        "{out_data}/ref/idx/versionInfo.json"
     params:
         job_name = "build_idx",
         memory = "select[mem > 64] rusage[mem = 64]",
-        out_dir = "{out_data}/scifi/ref/idx"
+        out_dir = "{out_data}/ref/idx"
     log:
-        "/scifi/ref/logs/build_idx"
+        "logs/build_idx.out"
     threads:
         16
     shell:
@@ -129,17 +129,17 @@ rule build_idx: # build a splici (spliced + intron) index for alevin-fry
 
 rule map_reads: # map reads and generate a RAD (Reduced Alignment Data) file
     input:
-        idx = "{out_data}/scifi/ref/idx",
-        tgmap = "{out_data}/scifi/ref/transcriptome/transcriptome_splici_fl86_t2g.tsv",
+        idx = "{out_data}/ref/idx",
+        tgmap = "{out_data}/ref/transcriptome/transcriptome_splici_fl86_t2g.tsv",
         _get_fastqs
     output:
-        "{out_data}/scifi/{sample}/map/alevin/alevin.log",
-        "{out_data}/scifi/{sample}/map/aux_info/meta_info.json",
-        "{out_data}/scifi/{sample}/map/cmd_info.json",
-        "{out_data}/scifi/{sample}/map/libParams",
-        "{out_data}/scifi/{sample}/map/logs/salmon_quant.log",
-        "{out_data}/scifi/{sample}/map/map.rad",
-        "{out_data}/scifi/{sample}/map/unmapped_bc_count.bin",
+        "{out_data}/{sample}/map/alevin/alevin.log",
+        "{out_data}/{sample}/map/aux_info/meta_info.json",
+        "{out_data}/{sample}/map/cmd_info.json",
+        "{out_data}/{sample}/map/libParams",
+        "{out_data}/{sample}/map/logs/salmon_quant.log",
+        "{out_data}/{sample}/map/map.rad",
+        "{out_data}/{sample}/map/unmapped_bc_count.bin",
     params:
         job_name = "map_reads",
         memory = "select[mem > 64] rusage[mem = 64]",
@@ -147,9 +147,9 @@ rule map_reads: # map reads and generate a RAD (Reduced Alignment Data) file
         end = 5,
         barcodeLength = 16,
         umiLength = 8,
-        out_dir = "{out_data}/scifi/{sample}/map"
+        out_dir = "{out_data}/{sample}/map"
     log:
-        "/scifi/logs/map_reads/{sample}.out"
+        "logs/map_reads/{sample}.out"
     threads:
         16
     shell:
@@ -171,21 +171,21 @@ rule map_reads: # map reads and generate a RAD (Reduced Alignment Data) file
 
 rule generate_permit_list: # generate a "permit list" of barcodes believed to belong to real (high-quality) cells
     input:
-        mapped_reads = "{out_data}/scifi/{sample}/map"
+        mapped_reads = "{out_data}/{sample}/map"
     output:
-        "{out_data}/scifi/{sample}/quant/all_freq.tsv",
-        "{out_data}/scifi/{sample}/quant/collate.json",
-        "{out_data}/scifi/{sample}/quant/generate_permit_list.json",
-        "{out_data}/scifi/{sample}/quant/map.collated.rad",
-        "{out_data}/scifi/{sample}/quant/permit_freq.tsv",
-        "{out_data}/scifi/{sample}/quant/permit_map.bin",
-        "{out_data}/scifi/{sample}/quant/unmapped_bc_count_collated.bin"
+        "{out_data}/{sample}/quant/all_freq.tsv",
+        "{out_data}/{sample}/quant/collate.json",
+        "{out_data}/{sample}/quant/generate_permit_list.json",
+        "{out_data}/{sample}/quant/map.collated.rad",
+        "{out_data}/{sample}/quant/permit_freq.tsv",
+        "{out_data}/{sample}/quant/permit_map.bin",
+        "{out_data}/{sample}/quant/unmapped_bc_count_collated.bin"
     params:
         job_name = "generate_permit_list",
         memory = "select[mem > 64] rusage[mem = 64]",
-        out_dir = "{out_data}/scifi/{sample}/quant"
+        out_dir = "{out_data}/{sample}/quant"
     log:
-        "/scifi/logs/generate_permit_list/{sample}.out"
+        "logs/generate_permit_list/{sample}.out"
     shell:
         """
         conda activate alevin_fry
@@ -198,13 +198,13 @@ rule generate_permit_list: # generate a "permit list" of barcodes believed to be
 
 rule collate: # collate the input RAD file
     input:
-        quant = "{out_data}/scifi/{sample}/quant",
-        rad_dir = "{out_data}/scifi/{sample}/map"
+        quant = "{out_data}/{sample}/quant",
+        rad_dir = "{out_data}/{sample}/map"
     params:
         job_name = "collate",
         memory = "select[mem > 64] rusage[mem = 64]"
     log:
-        "/scifi/logs/collate/{sample}.out"
+        "logs/collate/{sample}.out"
     threads:
         16
     shell:
@@ -218,20 +218,20 @@ rule collate: # collate the input RAD file
 
 rule quant: # generate a cell-by-gene count matrix from the collated mapping file
     input:
-        quant = "{out_data}/scifi/{sample}/quant",
-        tgmap = "{out_data}/scifi/ref/transcriptome/transcriptome_splici_fl86_t2g.tsv"
+        quant = "{out_data}/{sample}/quant",
+        tgmap = "{out_data}/ref/transcriptome/transcriptome_splici_fl86_t2g.tsv"
     output:
-        "{out_data}/scifi/{sample}/quant_res/alevin/quants_mat_cols.txt",
-        "{out_data}/scifi/{sample}/quant_res/alevin/quants_mat.mtx",
-        "{out_data}/scifi/{sample}/quant_res/alevin/quants_mat_rows.txt",
-        "{out_data}/scifi/{sample}/quant_res/featureDump.txt",
-        "{out_data}/scifi/{sample}/quant_res/quant.json"
+        "{out_data}/{sample}/quant_res/alevin/quants_mat_cols.txt",
+        "{out_data}/{sample}/quant_res/alevin/quants_mat.mtx",
+        "{out_data}/{sample}/quant_res/alevin/quants_mat_rows.txt",
+        "{out_data}/{sample}/quant_res/featureDump.txt",
+        "{out_data}/{sample}/quant_res/quant.json"
     params:
         job_name = "quant",
         memory = "select[mem > 64] rusage[mem = 64]",
-        out_dir = "{out_data}/scifi/{sample}/quant_res"
+        out_dir = "{out_data}/{sample}/quant_res"
     log:
-        "/scifi/logs/quant/{sample}.out"
+        "logs/quant/{sample}.out"
     threads:
         16
     shell:

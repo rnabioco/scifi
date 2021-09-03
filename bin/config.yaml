@@ -6,7 +6,7 @@ RAW_DATA:
 
 OUT_DATA:
   # path to output data files
-  "../data"
+  "../scifi"
 
 FASTA:
   # path to fasta .fa reference file
