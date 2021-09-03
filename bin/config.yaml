@@ -6,19 +6,19 @@ RAW_DATA:
 
 OUT_DATA:
   # path to output data files
-  "../scifi"
+  "/beevol/home/winklerc/projects/scifi_pipeline/scifi"
 
 FASTA:
   # path to fasta .fa reference file
-  "/beevol/home/winklerc/projects/scifi_pipeline/test_ref/refdata-gex-GRCh38-2020-A/fasta/genome.fa" 
+  "/beevol/home/winklerc/projects/scifi_pipeline/ref/refdata-gex-GRCh38-2020-A/fasta/genome.fa" 
 
 GTF:
   # path to gtf .gtf gene annotation file
-  "/beevol/home/winklerc/projects/scifi_pipeline/test_ref/refdata-gex-GRCh38-2020-A/genes/genes.gtf" 
+  "/beevol/home/winklerc/projects/scifi_pipeline/ref/refdata-gex-GRCh38-2020-A/genes/genes.gtf" 
 
 SAMPLES:
   # path to allowlist
-  "/beevol/home/winklerc/projects/scifi_pipeline/raw_data/allowlist"
+  "/beevol/home/winklerc/projects/scifi_pipeline/raw_data/allowlist.tsv"
 
 SRC:
   # path to directory with source code

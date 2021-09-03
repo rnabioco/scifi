@@ -13,13 +13,12 @@ SRC = config["SRC"]
 
 samples = []
 with open(SAMPLES) as f:
-    for line in f:
-        splitline = line.split()
-        well_id = splitline[0]
-        sample_name = splitline[1]
-        samples.append(f"{well_id}_{sample_name}")
-samples.append("unassigned")
-return samples
+  for line in f:
+      splitline = line.split()
+      well_id = splitline[0]
+      sample_name = splitline[1]
+      samples.append(f"{well_id}_{sample_name}")
+  samples.append("unassigned")
 
 rule all:
   input:
