@@ -1,9 +1,31 @@
-# Function from https://combine-lab.github.io/alevin-fry-tutorials/2021/improving-txome-specificity/
+#!/usr/bin/env Rscript
+# make_splici_txome function from https://combine-lab.github.io/alevin-fry-tutorials/2021/improving-txome-specificity/
+# adapted to take command line arguments for snakemake pipeline implementation
+
+args = commandArgs(trailingOnly = TRUE)
+
+if(length(args) < 5){
+  stop("missing args: gtf fasta read_length flank_trim_length outpath")
+}
+
+gtf_path <- args[1]
+genome_path <- args[2]
+read_length <- args[3]
+flank_trim_length <- args[4]
+output_dir <- args[5]
+
+suppressPackageStartupMessages({
+  library(eisaR)
+  library(Biostrings)
+  library(BSgenome)
+  library(stringr)
+  library(GenomicFeatures)
+})
 
 make_splici_txome <- function(gtf_path,
                               genome_path,
                               read_length,
-                              flank_trim_length = 5,
+                              flank_trim_length,
                               output_dir,
                               extra_spliced=NULL,
                               extra_unspliced=NULL,
@@ -199,3 +221,9 @@ make_splici_txome <- function(gtf_path,
 
   message("Done.")
 }
+
+make_splici_txome(gtf_path =gtf_path, 
+                  genome_path=genome_path, 
+                  read_length=read_length, 
+                  flank_trim_length=flank_trim_length, 
+                  output_dir=output_dir)

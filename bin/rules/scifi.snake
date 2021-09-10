@@ -49,10 +49,9 @@ rule preprocess: # split input fastq files from RAW_DATA by well and format for 
       "logs/preprocess.out"
     shell:
         """
-        python3 \
-            src/preprocessing.py \
-            {input.data} \
-            {input.allowlist}
+        src/preprocessing.py \
+        {input.data} \
+        {input.allowlist}
         """
 
 rule make_txome: # make a splici (spliced + intron) transcriptome for alevin-fry
@@ -73,23 +72,12 @@ rule make_txome: # make a splici (spliced + intron) transcriptome for alevin-fry
         "logs/make_txome.out"
     shell:
         """
-        R
-
-        source("src/make_splici_txome.R")
-
-        suppressPackageStartupMessages({
-        library(eisaR)
-        library(Biostrings)
-        library(BSgenome)
-        library(stringr)
-        library(GenomicFeatures)
-        })
-
-        make_splici_txome(gtf_path = {input.gtf}, 
-                          genome_path = {input.genome}, 
-                          read_length = {params.read_length}, 
-                          flank_trim_length = {params.flank_trim_length}, 
-                          output_dir = {params.out_dir})
+        src/make_splici_txome.R \
+        {input.gtf} \
+        {input.genome} \
+        {params.read_length} \
+        {params.flank_trim_length} \
+        {params.out_dir}
         """
 
 rule build_idx: # build a splici (spliced + intron) index for alevin-fry
@@ -130,7 +118,7 @@ rule build_idx: # build a splici (spliced + intron) index for alevin-fry
 rule map_reads: # map reads and generate a RAD (Reduced Alignment Data) file
     input:
         _get_fastqs,
-        idx = "{out_data}/ref/idx",
+        idx = rules.build_idx.output,
         tgmap = "{out_data}/ref/transcriptome/transcriptome_splici_fl86_t2g.tsv"
     output:
         "{out_data}/{sample}/map/alevin/alevin.log",
@@ -171,7 +159,7 @@ rule map_reads: # map reads and generate a RAD (Reduced Alignment Data) file
 
 rule generate_permit_list: # generate a "permit list" of barcodes believed to belong to real (high-quality) cells
     input:
-        mapped_reads = "{out_data}/{sample}/map"
+        mapped_reads = rules.map_reads.output
     output:
         "{out_data}/{sample}/quant/all_freq.tsv",
         "{out_data}/{sample}/quant/collate.json",
@@ -198,8 +186,8 @@ rule generate_permit_list: # generate a "permit list" of barcodes believed to be
 
 rule collate: # collate the input RAD file
     input:
-        quant = "{out_data}/{sample}/quant",
-        rad_dir = "{out_data}/{sample}/map"
+        quant = rules.generate_permit_list.output,
+        rad_dir = rules.map_reads.output
     params:
         job_name = "collate",
         memory = "select[mem > 64] rusage[mem = 64]"
@@ -218,7 +206,7 @@ rule collate: # collate the input RAD file
 
 rule quant: # generate a cell-by-gene count matrix from the collated mapping file
     input:
-        quant = "{out_data}/{sample}/quant",
+        quant = rules.generate_permit_list.output,
         tgmap = "{out_data}/ref/transcriptome/transcriptome_splici_fl86_t2g.tsv"
     output:
         "{out_data}/{sample}/quant_res/alevin/quants_mat_cols.txt",

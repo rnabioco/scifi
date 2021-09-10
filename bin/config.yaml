@@ -23,3 +23,11 @@ SAMPLES:
 SRC:
   # path to directory with source code
   "/beevol/home/winklerc/projects/scifi_pipeline/src"
+
+READ_LENGTH:
+  # the scRNA-seq read length
+  "91"
+
+FLANK_TRIM_LENGTH:
+  # used to avoid marginal case when dealing with junctional reads
+  "5"

@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # preprocessing.py
 #
 # Take the I1, R1, R2, and R3 fastq files from a scifi experiment and do the following:
