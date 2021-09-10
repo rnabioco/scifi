@@ -1,4 +1,4 @@
-shell.executable("/usr/bin/env bash")
+shell.executable("/bin/bash")
 
 """ Snakemake pipeline for scifi-RNA-seq counting"""
 
