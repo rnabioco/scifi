@@ -5,9 +5,10 @@ rule preprocess: # split input fastq files from RAW_DATA by well and format for 
         data = RAW_DATA,
         allowlist = RAW_DATA + "/allowlist.tsv"
     output:
-        I1 = "{out_data}/preprocessed_fastqs/{sample}_I1.fastq.gz",
-        R1 = "{out_data}/preprocessed_fastqs/{sample}_R1.fastq.gz",
-        R2 = "{out_data}/preprocessed_fastqs/{sample}_R2.fastq.gz"
+        expand("{out_data}/preprocessed_fastqs/{sample}_{read}.fastq.gz",
+               sample = samples,
+               out_data = OUT_DATA,
+               read = ["R1", "R2", "I1"])
     params:
         job_name = "preprocess",
         memory = "select[mem>64] rusage[mem=64]"
@@ -76,15 +77,15 @@ rule build_idx: # build a splici (spliced + intron) index for alevin-fry
     shell:
         """
         salmon index \
-            -t {input.fa} \
+            -t {input.fasta} \
             -i {params.out_dir} \
             -p {threads}
         """
 
 rule map_reads: # map reads and generate a RAD (Reduced Alignment Data) file
     input:
-        R1 = rules.preprocess.output.R1,
-        R2 = rules.preprocess.output.R2,
+        R1 = "{out_data}/preprocessed_fastqs/{sample}_R1.fastq.gz",
+        R2 = "{out_data}/preprocessed_fastqs/{sample}_R2.fastq.gz",
         idx = rules.build_idx.output,
         tgmap = "{out_data}/ref/transcriptome/transcriptome_splici_fl86_t2g.tsv"
     output:
