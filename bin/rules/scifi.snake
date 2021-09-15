@@ -1,6 +1,7 @@
 """ Snakerules for counting scifi-RNA-seq data """
 
-rule preprocess: # split input fastq files from RAW_DATA by well and format for alevin-fry
+rule preprocess: 
+# split input fastq files from RAW_DATA by well and format for alevin-fry
     input:
         data = RAW_DATA,
         allowlist = RAW_DATA + "/allowlist.tsv"
@@ -21,7 +22,8 @@ rule preprocess: # split input fastq files from RAW_DATA by well and format for 
         {input.allowlist}
         """
 
-rule make_txome: # make a splici (spliced + intron) transcriptome for alevin-fry
+rule make_txome: 
+# make a splici (spliced + intron) transcriptome for alevin-fry
     input:
         genome = FASTA,
         gtf = GTF
@@ -47,7 +49,8 @@ rule make_txome: # make a splici (spliced + intron) transcriptome for alevin-fry
         {params.out_dir}
         """
 
-rule build_idx: # build a splici (spliced + intron) index for alevin-fry
+rule build_idx: 
+# build a splici (spliced + intron) index for alevin-fry
     input:
         fasta = "{out_data}/ref/transcriptome/transcriptome_splici_fl86.fa"
     output:
@@ -82,7 +85,8 @@ rule build_idx: # build a splici (spliced + intron) index for alevin-fry
             -p {threads}
         """
 
-rule map_reads: # map reads and generate a RAD (Reduced Alignment Data) file
+rule map_reads: 
+# map reads and generate a RAD (Reduced Alignment Data) file
     input:
         R1 = "{out_data}/preprocessed_fastqs/{sample}_R1.fastq.gz",
         R2 = "{out_data}/preprocessed_fastqs/{sample}_R2.fastq.gz",
@@ -125,7 +129,9 @@ rule map_reads: # map reads and generate a RAD (Reduced Alignment Data) file
             --sketch
         """
 
-rule generate_permit_list: # generate a "permit list" of barcodes believed to belong to real (high-quality) cells
+rule generate_and_collate: 
+# generate a "permit list" of barcodes believed to belong to real (high-quality) cells
+# then, collate the input RAD file
     input:
         mapped_reads = rules.map_reads.output
     output:
@@ -137,11 +143,12 @@ rule generate_permit_list: # generate a "permit list" of barcodes believed to be
         "{out_data}/{sample}/quant/permit_map.bin",
         "{out_data}/{sample}/quant/unmapped_bc_count_collated.bin"
     params:
-        job_name = "generate_permit_list",
+        job_name = "generate_and_collate",
         memory = "select[mem>64] rusage[mem=64]",
-        out_dir = "{out_data}/{sample}/quant"
+        quant_dir = "{out_data}/{sample}/quant",
+        rad_dir = "{out_data}/{sample}/map/"
     log:
-        "logs/generate_permit_list/{sample}.out"
+        "logs/generate_and_collate/{sample}.out"
     shell:
         """
         conda activate alevin_fry
@@ -149,32 +156,18 @@ rule generate_permit_list: # generate a "permit list" of barcodes believed to be
             -d fw \
             --force-cells 100000 \
             -i {input.mapped_reads} \
-            -o {params.out_dir}
-        """
+            -o {params.quant_dir}
 
-rule collate: # collate the input RAD file
-    input:
-        quant = rules.generate_permit_list.output,
-        rad_dir = rules.map_reads.output
-    params:
-        job_name = "collate",
-        memory = "select[mem>64] rusage[mem=64]"
-    log:
-        "logs/collate/{sample}.out"
-    threads:
-        16
-    shell:
-        """
-        conda activate alevin_fry
         alevin-fry collate \
             -t {threads} \
-            -i {input.quant} \
-            -r {input.rad_dir}
+            -i {params.quant_dir} \
+            -r {params.rad_dir}
         """
 
-rule quant: # generate a cell-by-gene count matrix from the collated mapping file
+rule quant: 
+# generate a cell-by-gene count matrix from the collated mapping file
     input:
-        quant = rules.generate_permit_list.output,
+        quant = rules.generate_and_collate.output,
         tgmap = "{out_data}/ref/transcriptome/transcriptome_splici_fl86_t2g.tsv"
     output:
         "{out_data}/{sample}/quant_res/alevin/quants_mat_cols.txt",
