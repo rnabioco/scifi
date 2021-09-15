@@ -12,14 +12,16 @@ rule preprocess:
                read = ["R1", "R2", "I1"])
     params:
         job_name = "preprocess",
-        memory = "select[mem>64] rusage[mem=64]"
+        memory = "select[mem>64] rusage[mem=64]",
+        outdata_dir = OUT_DATA
     log:
       "logs/preprocess.out"
     shell:
         """
         {SRC}/preprocessing.py \
         {input.data} \
-        {input.allowlist}
+        {input.allowlist} \
+        {params.outdata_dir}
         """
 
 rule make_txome: 

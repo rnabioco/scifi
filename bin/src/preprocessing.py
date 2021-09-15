@@ -30,6 +30,7 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument("data_dir", help = "path to folder with fastq files from scifi scRNA-seq experiment (I1, R1, R2, R3)")
 parser.add_argument("allowlist", help = "path to allowlist (a tab-separated file that contains the well id, sample name, and sample index of each sample")
+parser.add_argument("outdata_dir", help = "path to output folder with demultiplexed fastq files from scifi scRNA-seq experiment (I1, R1, R2, R3)")
 parser.add_argument("tolerance", help = "hamming distance for sequencing error allowance", nargs = "?", default = 1)
 
 args = parser.parse_args()
@@ -67,9 +68,8 @@ def main(argv):
     # change dir to data_dir
     os.chdir(args.data_dir)
 
-    # make outfile directory, "preprocessed_fastqs"
-    outdir = "preprocessed_fastqs"
-    os.makedirs(f"../{outdir}", exist_ok = True)
+    # make outfile directory
+    os.makedirs(f"{args.outdata_dir}/preprocessed_fastqs", exist_ok = True)
 
     # initialize output dictionary
     output_dict = {}
@@ -106,15 +106,15 @@ def main(argv):
             # if sample_index is in the allowlist of well-specific sample indexes (hamming distance <= 1 by default):
             match = next((sample for sample in samples if hamming_distance(sample, sample_index) <= args.tolerance), None)
             if match:
-                write_entry(f"../preprocessed_fastqs/{sample_dict[match][0]}_{sample_dict[match][1]}_I1.fastq.gz", i1_entry, output_dict)
-                write_entry(f"../preprocessed_fastqs/{sample_dict[match][0]}_{sample_dict[match][1]}_R1.fastq.gz", r1_entry, output_dict)
-                write_entry(f"../preprocessed_fastqs/{sample_dict[match][0]}_{sample_dict[match][1]}_R2.fastq.gz", r3_entry, output_dict)
+                write_entry(f"{args.outdata_dir}/preprocessed_fastqs/{sample_dict[match][0]}_{sample_dict[match][1]}_I1.fastq.gz", i1_entry, output_dict)
+                write_entry(f"{args.outdata_dir}/preprocessed_fastqs/{sample_dict[match][0]}_{sample_dict[match][1]}_R1.fastq.gz", r1_entry, output_dict)
+                write_entry(f"{args.outdata_dir}/preprocessed_fastqs/{sample_dict[match][0]}_{sample_dict[match][1]}_R2.fastq.gz", r3_entry, output_dict)
 
             # if sample_index is not in the allowlist of well-specific sample indexes it is an unassigned read:
             else:
-                write_entry(f"../preprocessed_fastqs/unassigned_I1.fastq.gz", i1_entry, output_dict)
-                write_entry(f"../preprocessed_fastqs/unassigned_R1.fastq.gz", r1_entry, output_dict)
-                write_entry(f"../preprocessed_fastqs/unassigned_R2.fastq.gz", r3_entry, output_dict)
+                write_entry(f"{args.outdata_dir}/preprocessed_fastqs/unassigned_I1.fastq.gz", i1_entry, output_dict)
+                write_entry(f"{args.outdata_dir}/preprocessed_fastqs/unassigned_R1.fastq.gz", r1_entry, output_dict)
+                write_entry(f"{args.outdata_dir}/preprocessed_fastqs/unassigned_R2.fastq.gz", r3_entry, output_dict)
             
     except IOError:
         print("Could not open file.")
