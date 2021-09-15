@@ -6,7 +6,7 @@ rule preprocess: # split input fastq files from RAW_DATA by well and format for 
         allowlist = RAW_DATA + "/allowlist.tsv"
     output:
         expand("{out_data}/preprocessed_fastqs/{sample}_{read}.fastq.gz",
-               sample = samples,
+               sample = SAMPLES,
                out_data = OUT_DATA,
                read = ["R1", "R2", "I1"])
     params:
