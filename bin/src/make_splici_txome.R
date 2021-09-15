@@ -10,8 +10,8 @@ if(length(args) < 5){
 
 gtf_path <- args[1]
 genome_path <- args[2]
-read_length <- args[3]
-flank_trim_length <- args[4]
+read_length <- as.integer(args[3])
+flank_trim_length <- as.integer(args[4])
 output_dir <- args[5]
 
 suppressPackageStartupMessages({
