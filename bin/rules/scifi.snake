@@ -63,10 +63,10 @@ rule build_idx:
         "{out_data}/ref/idx/info.json",
         "{out_data}/ref/idx/mphf.bin",
         "{out_data}/ref/idx/pos.bin",
-        "{out_data}/ref/idx/pre_indexing.bin",
+        "{out_data}/ref/idx/pre_indexing.log",
         "{out_data}/ref/idx/rank.bin",
         "{out_data}/ref/idx/refAccumLengths.bin",
-        "{out_data}/ref/idx/ref_indexing.bin",
+        "{out_data}/ref/idx/ref_indexing.log",
         "{out_data}/ref/idx/reflengths.bin",
         "{out_data}/ref/idx/refseq.bin",
         "{out_data}/ref/idx/seq.bin",
@@ -123,7 +123,7 @@ rule map_reads:
             -i {input.idx} \
             -p {threads} \
             -o {params.out_dir} \
-            --tgmap {input.tgmap} \
+            --tgMap {input.tgmap} \
             --end {params.end} \
             --barcodeLength {params.barcodeLength} \
             --umiLength {params.umiLength} \
