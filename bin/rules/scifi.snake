@@ -92,7 +92,6 @@ rule map_reads:
     input:
         R1 = "{out_data}/preprocessed_fastqs/{sample}_R1.fastq.gz",
         R2 = "{out_data}/preprocessed_fastqs/{sample}_R2.fastq.gz",
-        idx = rules.build_idx.output,
         tgmap = "{out_data}/ref/transcriptome/transcriptome_splici_fl86_t2g.tsv"
     output:
         "{out_data}/{sample}/map/alevin/alevin.log",
@@ -110,6 +109,7 @@ rule map_reads:
         barcodeLength = 16,
         umiLength = 8,
         out_dir = "{out_data}/{sample}/map"
+        idx_dir = "{out_data}/ref/idx"
     log:
         "logs/map_reads/{sample}.out"
     threads:
@@ -120,7 +120,7 @@ rule map_reads:
             -l {params.library_type} \
             -1 {input.R1} \
             -2 {input.R2} \
-            -i {input.idx} \
+            -i {params.idx_dir} \
             -p {threads} \
             -o {params.out_dir} \
             --tgMap {input.tgmap} \
