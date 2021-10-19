@@ -26,6 +26,7 @@ module load modules modules-init modules-python
 module load R/4.0.3
 
 source ~/miniconda3/etc/profile.d/conda.sh
+conda activate alevin_fry
 
 # other programs (not in modules)
 # salmon

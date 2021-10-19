@@ -153,7 +153,6 @@ rule generate_and_collate:
         "logs/generate_and_collate/{sample}.out"
     shell:
         """
-        conda activate alevin_fry
         alevin-fry generate-permit-list \
             -d fw \
             --force-cells 100000 \
@@ -187,7 +186,6 @@ rule quant:
         16
     shell:
         """
-        conda activate alevin_fry
         alevin-fry quant \
             -t {threads} \
             -i {input.quant} \
