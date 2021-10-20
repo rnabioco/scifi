@@ -135,7 +135,7 @@ rule generate_and_collate:
 # generate a "permit list" of barcodes believed to belong to real (high-quality) cells
 # then, collate the input RAD file
     input:
-        mapped_reads = rules.map_reads.output
+        "{out_data}/{sample}/map/map.rad"
     output:
         "{out_data}/{sample}/quant/all_freq.tsv",
         "{out_data}/{sample}/quant/collate.json",
@@ -156,7 +156,7 @@ rule generate_and_collate:
         alevin-fry generate-permit-list \
             -d fw \
             --force-cells 100000 \
-            -i {input.mapped_reads} \
+            -i {params.rad_dir} \
             -o {params.quant_dir}
 
         alevin-fry collate \
@@ -168,7 +168,7 @@ rule generate_and_collate:
 rule quant: 
 # generate a cell-by-gene count matrix from the collated mapping file
     input:
-        quant = rules.generate_and_collate.output,
+        "{out_data}/{sample}/quant/map.collated.rad",
         tgmap = "{out_data}/ref/transcriptome/transcriptome_splici_fl86_t2g.tsv"
     output:
         "{out_data}/{sample}/quant_res/alevin/quants_mat_cols.txt",
@@ -179,6 +179,7 @@ rule quant:
     params:
         job_name = "quant",
         memory = "select[mem>64] rusage[mem=64]",
+        in_dir = "{out_data}/{sample}/quant/",
         out_dir = "{out_data}/{sample}/quant_res"
     log:
         "logs/quant/{sample}.out"
@@ -188,7 +189,7 @@ rule quant:
         """
         alevin-fry quant \
             -t {threads} \
-            -i {input.quant} \
+            -i {params.in_dir} \
             -o {params.out_dir} \
             --tg-map {input.tgmap} \
             --resolution cr-like \
