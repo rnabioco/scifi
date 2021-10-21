@@ -1,5 +1,50 @@
 """ Snakerules for counting scifi-RNA-seq data """
 
+rule map_reads: 
+# map reads and generate a RAD (Reduced Alignment Data) file
+    input:
+        idx = "{out_data}/ref/idx/complete_ref_lens.bin",
+        R1 = "{out_data}/preprocessed_fastqs/{sample}_R1.fastq.gz",
+        R2 = "{out_data}/preprocessed_fastqs/{sample}_R2.fastq.gz",
+        tgmap = "{out_data}/ref/transcriptome/transcriptome_splici_fl86_t2g.tsv"
+    output:
+        "{out_data}/{sample}/map/alevin/alevin.log",
+        "{out_data}/{sample}/map/aux_info/meta_info.json",
+        "{out_data}/{sample}/map/cmd_info.json",
+        "{out_data}/{sample}/map/libParams",
+        "{out_data}/{sample}/map/logs/salmon_quant.log",
+        "{out_data}/{sample}/map/map.rad",
+        "{out_data}/{sample}/map/unmapped_bc_count.bin",
+    params:
+        job_name = "map_reads",
+        memory = "select[mem>64] rusage[mem=64]",
+        library_type = "ISR",
+        end = 5,
+        barcodeLength = 16,
+        umiLength = 8,
+        out_dir = "{out_data}/{sample}/map",
+        idx_dir = "{out_data}/ref/idx"
+    log:
+        "logs/map_reads/{sample}.out"
+    threads:
+        16
+    shell:
+        """
+        salmon alevin \
+            -l {params.library_type} \
+            -1 {input.R1} \
+            -2 {input.R2} \
+            -i {params.idx_dir} \
+            -p {threads} \
+            -o {params.out_dir} \
+            --tgMap {input.tgmap} \
+            --end {params.end} \
+            --barcodeLength {params.barcodeLength} \
+            --umiLength {params.umiLength} \
+            --keepCBFraction 1 \
+            --sketch
+        """
+
 rule preprocess: 
 # split input fastq files from RAW_DATA by well and format for alevin-fry
     input:
@@ -85,50 +130,6 @@ rule build_idx:
             -t {input.fasta} \
             -i {params.out_dir} \
             -p {threads}
-        """
-
-rule map_reads: 
-# map reads and generate a RAD (Reduced Alignment Data) file
-    input:
-        R1 = "{out_data}/preprocessed_fastqs/{sample}_R1.fastq.gz",
-        R2 = "{out_data}/preprocessed_fastqs/{sample}_R2.fastq.gz",
-        tgmap = "{out_data}/ref/transcriptome/transcriptome_splici_fl86_t2g.tsv"
-    output:
-        "{out_data}/{sample}/map/alevin/alevin.log",
-        "{out_data}/{sample}/map/aux_info/meta_info.json",
-        "{out_data}/{sample}/map/cmd_info.json",
-        "{out_data}/{sample}/map/libParams",
-        "{out_data}/{sample}/map/logs/salmon_quant.log",
-        "{out_data}/{sample}/map/map.rad",
-        "{out_data}/{sample}/map/unmapped_bc_count.bin",
-    params:
-        job_name = "map_reads",
-        memory = "select[mem>64] rusage[mem=64]",
-        library_type = "ISR",
-        end = 5,
-        barcodeLength = 16,
-        umiLength = 8,
-        out_dir = "{out_data}/{sample}/map"
-        idx_dir = "{out_data}/ref/idx"
-    log:
-        "logs/map_reads/{sample}.out"
-    threads:
-        16
-    shell:
-        """
-        salmon alevin \
-            -l {params.library_type} \
-            -1 {input.R1} \
-            -2 {input.R2} \
-            -i {params.idx_dir} \
-            -p {threads} \
-            -o {params.out_dir} \
-            --tgMap {input.tgmap} \
-            --end {params.end} \
-            --barcodeLength {params.barcodeLength} \
-            --umiLength {params.umiLength} \
-            --keepCBFraction 1 \
-            --sketch
         """
 
 rule generate_and_collate: 
